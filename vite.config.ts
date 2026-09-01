@@ -1,10 +1,11 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// https://vite.dev/config/
-// GitHub Pages는 https://<user>.github.io/<repo>/ 경로로 서빙되므로 base 지정 필요.
-// 커스텀 도메인(showfeethemoney.com 등) 붙이면 base를 '/'로 바꾸면 됨.
+// base 경로 분기:
+// - GitHub Pages: /fee-calculator-web/ (하위 경로 서빙)
+// - NAS/nginx 루트 서빙 or 커스텀 도메인: /
+// 빌드 시 VITE_BASE 로 제어 (없으면 GitHub Pages 기본값)
 export default defineConfig({
-  base: '/fee-calculator-web/',
+  base: process.env.VITE_BASE ?? '/fee-calculator-web/',
   plugins: [react()],
 })

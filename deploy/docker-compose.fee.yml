@@ -1,0 +1,48 @@
+# fee-calculator NAS 배포용 docker-compose
+#
+# 전제:
+#  - 기존 salary-meter-db(MySQL) 컨테이너가 이미 떠 있음
+#  - fee_calculator 스키마 + eddy 권한 이미 생성됨
+#  - salary-meter-db가 속한 네트워크 이름을 아래 external 네트워크에 맞춰야 함
+#    (확인: docker network ls / docker inspect salary-meter-db)
+#
+# 배포:
+#  1) 맥북: ./gradlew bootJar  → JAR이 NAS 동기화 경로로 올라감
+#  2) 프론트: NAS에서 VITE_BASE=/ npm run build → dist 생성
+#  3) NAS에서: docker compose -f docker-compose.fee.yml up -d --build
+
+services:
+  fee-calculator-app:
+    image: eclipse-temurin:21-jre-jammy
+    container_name: fee-calculator-app
+    working_dir: /app
+    volumes:
+      - /volume1/Make-App/fee-calculator-api-0.0.1.jar:/app/app.jar:ro
+    environment:
+      - SPRING_PROFILES_ACTIVE=nas
+      - DB_PASSWORD=eddy_0613
+      - JWT_SECRET=change-this-to-a-long-random-secret-in-production
+    command: java -jar /app/app.jar
+    networks:
+      - db-net
+    restart: unless-stopped
+
+  fee-calculator-web:
+    image: nginx:alpine
+    container_name: fee-calculator-web
+    ports:
+      - "3001:80"   # 외부 포트 3001 (포트포워딩 대상). salary 3000과 충돌 안 함
+    volumes:
+      - /volume1/Make-App/fee-calculator-web/dist:/usr/share/nginx/html:ro
+      - /volume1/Make-App/fee-calculator-web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - fee-calculator-app
+    networks:
+      - db-net
+    restart: unless-stopped
+
+networks:
+  # 기존 salary-meter-db가 붙어있는 네트워크 이름으로 교체 필요
+  db-net:
+    external: true
+    name: salary-meter_default
