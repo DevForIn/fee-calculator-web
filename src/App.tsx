@@ -403,7 +403,9 @@ export default function App() {
                       <div className="ch-sub">{sub}</div>
                       {isRealCost && (
                         <div className="ch-breakdown">
-                          중개료 {won(r.mediationFee)} · 결제 {won(r.paymentFee)} · 배달비 {won(r.deliveryFee)}
+                          <span>중개료 {won(r.mediationFee)}</span>
+                          <span>결제 {won(r.paymentFee)}</span>
+                          <span>배달비 {won(r.deliveryFee)}</span>
                         </div>
                       )}
                     </div>

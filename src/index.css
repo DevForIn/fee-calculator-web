@@ -172,7 +172,9 @@ footer { text-align: center; color: var(--gray); font-size: 12px; margin-top: 30
 .toggle-row { display: flex; align-items: flex-start; gap: 10px; font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 0; }
 .toggle-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--blue); flex: 0 0 auto; margin-top: 1px; }
 .toggle-row b { color: var(--blue); }
-.ch-breakdown { font-size: 12px; color: var(--gray); margin-top: 4px; }
+.ch-breakdown { font-size: 12px; color: var(--gray); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 2px 8px; }
+.ch-breakdown span { white-space: nowrap; }
+.ch-breakdown span:not(:last-child)::after { content: '·'; margin-left: 8px; color: var(--line); }
 
 /* 폼 에러 메시지 */
 .form-error {
