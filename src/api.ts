@@ -73,8 +73,11 @@ export const api = {
       method: 'POST', body: JSON.stringify({ businessNumber }),
     }),
 
-  // 관리자 통계
-  getStats: () => request<StatsSummary>('/stats/summary'),
+  // 관리자 통계 (비밀번호 헤더 필요)
+  getStats: (adminPassword: string) =>
+    request<StatsSummary>('/stats/summary', {
+      headers: { 'X-Admin-Password': adminPassword },
+    }),
 };
 
 export interface StatsSummary {

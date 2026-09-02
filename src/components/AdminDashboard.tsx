@@ -10,13 +10,47 @@ const INDUSTRY_LABEL: Record<string, string> = {
 export function AdminDashboard() {
   const [stats, setStats] = useState<StatsSummary | null>(null);
   const [err, setErr] = useState('');
+  const [pw, setPw] = useState('');
+  const [authed, setAuthed] = useState(false);
 
+  async function login() {
+    setErr('');
+    try {
+      const s = await api.getStats(pw);
+      setStats(s);
+      setAuthed(true);
+      sessionStorage.setItem('admin-pw', pw);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : '인증 실패');
+    }
+  }
+
+  // 세션에 저장된 비번으로 자동 로그인 시도
   useEffect(() => {
-    api.getStats().then(setStats).catch((e) =>
-      setErr(e instanceof Error ? e.message : '통계 로드 실패'));
+    const saved = sessionStorage.getItem('admin-pw');
+    if (saved) {
+      api.getStats(saved).then((s) => { setStats(s); setAuthed(true); }).catch(() => {});
+    }
   }, []);
 
-  if (err) return <div className="wrap"><p className="form-error">{err}</p></div>;
+  // 로그인 게이트
+  if (!authed) {
+    return (
+      <div className="wrap">
+        <header><h1 style={{ fontSize: 22 }}>🔒 관리자</h1><p>통계를 보려면 비밀번호를 입력하세요.</p></header>
+        <div className="card">
+          <div className="field">
+            <input className="text-input" type="password" placeholder="관리자 비밀번호"
+              value={pw} onChange={(e) => setPw(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && login()} />
+          </div>
+          {err && <div className="form-error">{err}</div>}
+          <button className="calc" onClick={login}>확인</button>
+        </div>
+      </div>
+    );
+  }
+
   if (!stats) return <div className="wrap"><p style={{ padding: 40, textAlign: 'center' }}>불러오는 중...</p></div>;
 
   const maxIndustry = Math.max(1, ...stats.byIndustry.map((i) => Number(i.count)));
