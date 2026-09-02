@@ -40,10 +40,24 @@ export function useAuth() {
     return res.member;
   }, []);
 
+  const naverLogin = useCallback(async (code: string, state: string) => {
+    const res = await api.naverLogin(code, state);
+    tokenStore.set(res.token);
+    setMember(res.member);
+    return res.member;
+  }, []);
+
+  const googleLogin = useCallback(async (code: string) => {
+    const res = await api.googleLogin(code);
+    tokenStore.set(res.token);
+    setMember(res.member);
+    return res.member;
+  }, []);
+
   const logout = useCallback(() => {
     tokenStore.clear();
     setMember(null);
   }, []);
 
-  return { member, loading, login, signup, kakaoLogin, logout, setMember };
+  return { member, loading, login, signup, kakaoLogin, naverLogin, googleLogin, logout, setMember };
 }

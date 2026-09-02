@@ -52,6 +52,10 @@ export const api = {
     request<AuthResponse>('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   kakaoLogin: (code: string) =>
     request<AuthResponse>('/auth/kakao', { method: 'POST', body: JSON.stringify({ code }) }),
+  naverLogin: (code: string, state: string) =>
+    request<AuthResponse>('/auth/naver', { method: 'POST', body: JSON.stringify({ code, state }) }),
+  googleLogin: (code: string) =>
+    request<AuthResponse>('/auth/google', { method: 'POST', body: JSON.stringify({ code }) }),
 
   // 회원
   getMe: () => request<Member>('/member/me'),

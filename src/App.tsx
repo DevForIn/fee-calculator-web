@@ -68,19 +68,25 @@ export default function App() {
     if (auth.member) applyMember(auth.member);
   }, [auth.member]);
 
-  // 카카오 콜백 처리: /oauth/kakao?code=... 로 돌아오면 로그인 실행
+  // 소셜 콜백 처리: /oauth/{provider}?code=... 로 돌아오면 로그인 실행
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
-    const isKakaoCallback = window.location.pathname.includes('/oauth/kakao');
-    if (code && isKakaoCallback && !kakaoHandled.current) {
+    const path = window.location.pathname;
+    if (!code || kakaoHandled.current) return;
+
+    let p: Promise<Member> | null = null;
+    if (path.includes('/oauth/kakao')) p = auth.kakaoLogin(code);
+    else if (path.includes('/oauth/naver')) p = auth.naverLogin(code, params.get('state') ?? '');
+    else if (path.includes('/oauth/google')) p = auth.googleLogin(code);
+
+    if (p) {
       kakaoHandled.current = true; // 1회용 인가코드 중복 사용 방지 (StrictMode 대응)
-      auth.kakaoLogin(code)
-        .then(() => { window.history.replaceState({}, '', import.meta.env.BASE_URL); })
-        .catch((e) => {
-          setErrorMsg(e instanceof Error ? e.message : '카카오 로그인 실패');
-          window.history.replaceState({}, '', import.meta.env.BASE_URL);
-        });
+      p.then(() => { window.history.replaceState({}, '', import.meta.env.BASE_URL); })
+       .catch((e) => {
+         setErrorMsg(e instanceof Error ? e.message : '소셜 로그인 실패');
+         window.history.replaceState({}, '', import.meta.env.BASE_URL);
+       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

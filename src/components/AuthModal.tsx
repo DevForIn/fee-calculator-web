@@ -40,15 +40,30 @@ export function AuthModal({ auth, onClose, onDone }: Props) {
     }
   }
 
-  function socialTodo(name: string) {
-    alert(`${name} 로그인은 곧 지원 예정입니다. (OAuth 앱 등록 후 활성화)`);
-  }
-
   function kakaoStart() {
     const key = import.meta.env.VITE_KAKAO_REST_KEY;
     const redirect = import.meta.env.VITE_KAKAO_REDIRECT_URI;
     if (!key || !redirect) { alert('카카오 설정이 없습니다.'); return; }
     const url = `https://kauth.kakao.com/oauth/authorize?client_id=${key}&redirect_uri=${encodeURIComponent(redirect)}&response_type=code`;
+    window.location.href = url;
+  }
+
+  function naverStart() {
+    const id = import.meta.env.VITE_NAVER_CLIENT_ID;
+    const redirect = import.meta.env.VITE_NAVER_REDIRECT_URI;
+    if (!id) { alert('네이버 로그인은 곧 지원 예정입니다. (앱 등록 후 활성화)'); return; }
+    const state = Math.random().toString(36).slice(2);
+    sessionStorage.setItem('naver_state', state);
+    const url = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${id}&redirect_uri=${encodeURIComponent(redirect)}&state=${state}`;
+    window.location.href = url;
+  }
+
+  function googleStart() {
+    const id = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const redirect = import.meta.env.VITE_GOOGLE_REDIRECT_URI;
+    if (!id) { alert('구글 로그인은 곧 지원 예정입니다. (앱 등록 후 활성화)'); return; }
+    const scope = encodeURIComponent('email profile');
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${id}&redirect_uri=${encodeURIComponent(redirect)}&scope=${scope}`;
     window.location.href = url;
   }
 
@@ -92,8 +107,8 @@ export function AuthModal({ auth, onClose, onDone }: Props) {
 
         <div className="divider">또는 간편 로그인</div>
         <div className="social">
-          <button className="google" onClick={() => socialTodo('구글')}>구글로 시작하기</button>
-          <button className="naver" onClick={() => socialTodo('네이버')}>네이버로 시작하기</button>
+          <button className="google" onClick={googleStart}>구글로 시작하기</button>
+          <button className="naver" onClick={naverStart}>네이버로 시작하기</button>
           <button className="kakao" onClick={kakaoStart}>카카오로 시작하기</button>
         </div>
 
