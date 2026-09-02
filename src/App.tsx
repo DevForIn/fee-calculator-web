@@ -34,30 +34,63 @@ export default function App() {
   const kakaoHandled = useRef(false);
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [sharing, setSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const SITE_URL = import.meta.env.VITE_SITE_URL ?? window.location.origin;
+
+  // 링크 공유 (심리테스트 방식): 모바일=공유창, PC=링크 복사
+  async function shareLink() {
+    const shareData = {
+      title: '배달앱 수수료 계산기 | showmefee',
+      text: '배달앱·카드 수수료 1년에 얼마 내는지 알아? 나도 계산해봤어 👇',
+      url: SITE_URL,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(`${shareData.text}\n${SITE_URL}`);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (e) {
+      // 공유 취소는 무시
+      if (e instanceof Error && e.name !== 'AbortError') {
+        try {
+          await navigator.clipboard.writeText(`${shareData.text}\n${SITE_URL}`);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch { /* ignore */ }
+      }
+    }
+  }
 
   async function shareResult() {
     if (!shareCardRef.current || !result) return;
     setSharing(true);
+    const el = shareCardRef.current;
     try {
-      const dataUrl = await toPng(shareCardRef.current, { pixelRatio: 2, cacheBust: true });
-      const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], 'showmefee.png', { type: 'image/png' });
+      // 캡처 순간만 보이게 (opacity:0 상태로 캡처하면 투명 이미지가 나옴)
+      el.style.opacity = '1';
+      el.style.zIndex = '-1'; // 화면엔 다른 요소에 가려짐(사용자 눈엔 안 띔), 렌더는 완전
+      await new Promise((r) => setTimeout(r, 50)); // 렌더 안정화
+      const dataUrl = await toPng(el, {
+        pixelRatio: 2,
+        cacheBust: true,
+        backgroundColor: '#1b2a4a',
+        width: 500,
+        height: el.offsetHeight,
+      });
+      el.style.opacity = '0';
 
-      // Web Share API 지원 시 공유, 아니면 다운로드
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: '내가 내는 결제 수수료',
-          text: '나는 1년에 수수료를 이만큼 내고 있었다니… showmefee.com에서 계산해봐',
-        });
-      } else {
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = 'showmefee-result.png';
-        a.click();
-      }
+      // 무조건 다운로드 (테스트/확인 편의)
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = 'showmefee-result.png';
+      a.click();
     } catch (e) {
       console.warn('공유 실패:', e);
+      el.style.opacity = '0';
       setErrorMsg('이미지 생성에 실패했어요. 다시 시도해주세요.');
     } finally {
       setSharing(false);
@@ -394,9 +427,14 @@ export default function App() {
           </p>
 
           {auth.member && (
-            <button className="share-btn" onClick={shareResult} disabled={sharing}>
-              {sharing ? '이미지 만드는 중...' : '📤 결과 이미지로 공유하기'}
-            </button>
+            <div className="share-actions">
+              <button className="share-btn primary" onClick={shareLink}>
+                {copied ? '✓ 링크 복사됨!' : '🔗 친구에게 공유하기'}
+              </button>
+              <button className="share-btn" onClick={shareResult} disabled={sharing}>
+                {sharing ? '만드는 중...' : '📥 결과 이미지 저장'}
+              </button>
+            </div>
           )}
 
           {/* 공유용 카드 (화면 밖, 이미지 캡처 전용) */}

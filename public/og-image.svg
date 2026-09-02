@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b2a4a"/>
+      <stop offset="1" stop-color="#0a0f1c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="80" y="130" font-family="Apple SD Gothic Neo, sans-serif" font-size="34" font-weight="800" fill="#7ea6ff">💰 showmefee.com</text>
+  <text x="80" y="250" font-family="Apple SD Gothic Neo, sans-serif" font-size="72" font-weight="800" fill="#ffffff">배달앱 수수료,</text>
+  <text x="80" y="340" font-family="Apple SD Gothic Neo, sans-serif" font-size="72" font-weight="800" fill="#ffffff">1년에 얼마 낼까?</text>
+  <text x="80" y="430" font-family="Apple SD Gothic Neo, sans-serif" font-size="34" font-weight="500" fill="#c3ccdd">배민·쿠팡이츠·요기요 중개료 + 결제수수료 + 배달비</text>
+  <text x="80" y="480" font-family="Apple SD Gothic Neo, sans-serif" font-size="34" font-weight="500" fill="#c3ccdd">실비용까지 한 번에 계산</text>
+  <rect x="80" y="530" width="360" height="64" rx="32" fill="#2f6bff"/>
+  <text x="260" y="571" font-family="Apple SD Gothic Neo, sans-serif" font-size="28" font-weight="800" fill="#ffffff" text-anchor="middle">지금 계산해보기 →</text>
+</svg>
