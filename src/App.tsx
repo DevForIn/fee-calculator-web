@@ -70,9 +70,9 @@ export default function App() {
     setSharing(true);
     const el = shareCardRef.current;
     try {
-      // 캡처 순간만 보이게 (opacity:0 상태로 캡처하면 투명 이미지가 나옴)
+      // 캡처 순간만 화면 안으로 (평소엔 -10000px라 레이아웃 영향 없음, opacity:0이면 흰 이미지 나옴)
+      el.style.left = '0';
       el.style.opacity = '1';
-      el.style.zIndex = '-1'; // 화면엔 다른 요소에 가려짐(사용자 눈엔 안 띔), 렌더는 완전
       await new Promise((r) => setTimeout(r, 50)); // 렌더 안정화
       const dataUrl = await toPng(el, {
         pixelRatio: 2,
@@ -81,7 +81,8 @@ export default function App() {
         width: 500,
         height: el.offsetHeight,
       });
-      el.style.opacity = '0';
+      el.style.left = '-10000px';
+      el.style.opacity = '1';
 
       // 무조건 다운로드 (테스트/확인 편의)
       const a = document.createElement('a');
@@ -90,7 +91,7 @@ export default function App() {
       a.click();
     } catch (e) {
       console.warn('공유 실패:', e);
-      el.style.opacity = '0';
+      el.style.left = '-10000px';
       setErrorMsg('이미지 생성에 실패했어요. 다시 시도해주세요.');
     } finally {
       setSharing(false);
@@ -264,7 +265,7 @@ export default function App() {
 
       <header>
         <h1>내가 내는 결제 수수료,<br />1년에 얼마일까?</h1>
-        <p>카드·배달앱 3사·간편결제까지 한 번에 계산해드려요.</p>
+        <p>카드·간편결제·배달앱까지, 우리 가게 결제 수수료를 한 번에.</p>
       </header>
 
       {!auth.member && (

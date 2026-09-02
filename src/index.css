@@ -142,9 +142,9 @@ footer { text-align: center; color: var(--gray); font-size: 12px; margin-top: 30
 .share-btn:active { transform: translateY(1px); }
 .share-btn:disabled { opacity: .5; }
 
-/* 공유용 캡처 카드 (화면엔 안 보이지만 렌더는 되게 → html-to-image 캡처 가능) */
+/* 공유용 캡처 카드 (화면 밖 격리 - 레이아웃/오버플로 영향 없음, 캡처는 됨) */
 .share-capture {
-  position: fixed; left: 0; top: 0; z-index: -1; opacity: 0; pointer-events: none;
+  position: fixed; left: -10000px; top: 0; z-index: -1; pointer-events: none;
   width: 500px; padding: 44px 40px; box-sizing: border-box;
   background: linear-gradient(160deg, #1b2a4a, #0a0f1c); color: #ffffff;
   font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
