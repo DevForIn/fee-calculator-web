@@ -38,10 +38,11 @@ select, input.text-input {
 }
 select {
   -webkit-appearance: none; -moz-appearance: none; appearance: none;
-  padding-right: 40px; line-height: 1.4;
+  padding-right: 40px; line-height: 1.4; font-size: 16px;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");
   background-repeat: no-repeat; background-position: right 14px center;
 }
+select option { font-size: 16px; padding: 8px; }
 select:focus, input:focus { outline: none; border-color: var(--blue); }
 .hint { font-size: 13px; color: var(--gray); margin-top: 6px; }
 
@@ -100,6 +101,18 @@ button.calc:disabled { opacity: .5; cursor: not-allowed; }
 .tag { display: inline-block; font-size: 11px; background: var(--blue-light); color: var(--blue); padding: 2px 8px; border-radius: 20px; margin-left: 6px; font-weight: 700; vertical-align: middle; }
 .tip { background: var(--blue-light); border-radius: 12px; padding: 16px; font-size: 14px; }
 .tip b { color: var(--blue); }
+
+/* 수수료 절감 리포트 */
+.saving-report { background: var(--card-bg); border: 1px solid var(--line); border-radius: 16px; padding: 20px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(27,42,74,.06); }
+.sr-head { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+.sr-headline { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 14px; font-weight: 600; }
+.sr-tips { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.sr-tip { border-radius: 12px; padding: 14px; border-left: 4px solid var(--line); background: var(--bg); }
+.sr-tip.danger { border-left-color: var(--danger); }
+.sr-tip.warn { border-left-color: #f0a500; }
+.sr-tip.good { border-left-color: #2fb37a; }
+.sr-tip-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+.sr-tip-desc { font-size: 13px; color: var(--gray); line-height: 1.6; }
 .disclaimer { font-size: 12px; color: var(--gray); margin-top: 20px; line-height: 1.6; }
 
 /* 로그인 배너 */

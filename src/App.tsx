@@ -3,6 +3,7 @@ import { toPng } from 'html-to-image';
 import { api } from './api';
 import { useAuth } from './useAuth';
 import { AuthModal } from './components/AuthModal';
+import { buildSavingReport } from './savingReport';
 import type {
   CardTier, DeliveryTier, Industry, FeeRequest, FeeResponse, FeeLine, RatesResponse, Member,
 } from './types';
@@ -422,7 +423,10 @@ export default function App() {
             )}
           </div>
 
-          {auth.member && <Tip result={result} cardRate={rates.cardTiers[cardTier]} />}
+          {auth.member && (
+            <SavingReport result={result}
+              ctx={{ revenue, cardTier, deliveryTier, cardRate: rates.cardTiers[cardTier] }} />
+          )}
 
           <p className="disclaimer">
             ※ 본 계산은 공개 자료 기반 추정치이며, 실제 수수료는 가맹점 등급·계약·매출 구간에 따라 달라집니다.
@@ -488,16 +492,23 @@ export default function App() {
   );
 }
 
-function Tip({ result, cardRate }: { result: FeeResponse; cardRate: number }) {
-  const worst = result.lines[0];
-  if (!worst) return null;
-  const saveYear = worst.channelRevenue * 0.1 * Math.max(0, worst.rate - cardRate) * 12;
+function SavingReport({ result, ctx }: {
+  result: FeeResponse;
+  ctx: { revenue: number; cardTier: CardTier; deliveryTier: DeliveryTier; cardRate: number };
+}) {
+  const report = buildSavingReport(result, ctx);
   return (
-    <div className="tip">
-      💡 <b>{worst.label}</b>의 수수료 부담이 가장 큽니다.{' '}
-      {saveYear > 0
-        ? <>이 채널 비중을 10%만 카드결제로 옮겨도 연간 <b>{won(saveYear)}</b> 이상 아낄 수 있어요.</>
-        : '현재 채널 구성은 수수료 효율이 좋은 편입니다.'}
+    <div className="saving-report">
+      <div className="sr-head">💡 수수료 절감 리포트</div>
+      <p className="sr-headline">{report.headline}</p>
+      <ul className="sr-tips">
+        {report.tips.map((t, i) => (
+          <li key={i} className={`sr-tip ${t.level}`}>
+            <div className="sr-tip-title">{t.title}</div>
+            <div className="sr-tip-desc">{t.desc}</div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
