@@ -278,9 +278,18 @@ export default function App() {
       {result && (
         <div id="result">
           <div className="headline">
-            <div className="small">이 매출 기준, 당신이 1년에 내는 수수료는</div>
-            <div className="big"><span>{won(result.yearlyTotalFee)}</span></div>
-            <div className="small">월 {won(result.monthlyTotalFee)}</div>
+            <div className="small">내가 내는 결제 수수료</div>
+            <div className="fee-duo">
+              <div className="fee-col">
+                <div className="fee-label">월 수수료</div>
+                <div className="fee-val">{won(result.monthlyTotalFee)}</div>
+              </div>
+              <div className="fee-divider"></div>
+              <div className="fee-col">
+                <div className="fee-label">연 수수료</div>
+                <div className="fee-val accent">{won(result.yearlyTotalFee)}</div>
+              </div>
+            </div>
           </div>
 
           <div className="card" style={{ position: 'relative' }}>

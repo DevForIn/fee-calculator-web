@@ -63,6 +63,12 @@ button.calc:disabled { opacity: .5; cursor: not-allowed; }
 
 .headline { background: var(--headline-bg); color: #fff; border-radius: 16px; padding: 26px 22px; text-align: center; margin-bottom: 18px; }
 .headline .small { font-size: 14px; opacity: 0.8; }
+.fee-duo { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; }
+.fee-col { flex: 1; }
+.fee-label { font-size: 13px; opacity: 0.75; margin-bottom: 6px; }
+.fee-val { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; white-space: nowrap; }
+.fee-val.accent { color: #7ea6ff; }
+.fee-divider { width: 1px; align-self: stretch; background: rgba(255,255,255,.2); }
 .headline .big { font-size: 34px; font-weight: 800; margin: 8px 0; letter-spacing: -1px; }
 .headline .big span { color: #7ea6ff; }
 
