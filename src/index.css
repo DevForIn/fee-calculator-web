@@ -1,6 +1,6 @@
 :root {
   --navy: #1b2a4a; --blue: #2f6bff; --blue-light: #eaf0ff;
-  --gray: #6b7280; --line: #e5e7eb; --bg: #f7f9fc; --danger: #e04b4b;
+  --gray: #6b7280; --line: #d3d9e3; --bg: #eef1f6; --danger: #e04b4b;
   --card-bg: #ffffff; --input-bg: #ffffff; --headline-bg: #1b2a4a; --text: #1b2a4a;
 }
 html[data-theme='dark'] {
@@ -28,13 +28,19 @@ header p { color: var(--gray); margin-top: 10px; font-size: 15px; }
 .icon-btn.round { width: 40px; padding: 0; justify-content: center; font-size: 18px; }
 .icon-btn:active { transform: scale(0.95); }
 
-.card { background: var(--card-bg); border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-bottom: 18px; transition: background .25s, border-color .25s; }
+.card { background: var(--card-bg); border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(27,42,74,.06); transition: background .25s, border-color .25s; }
 .field { margin-bottom: 18px; }
 .field:last-child { margin-bottom: 0; }
 label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 15px; }
 select, input.text-input {
   width: 100%; padding: 13px 14px; border: 1px solid var(--line); border-radius: 10px;
   font-size: 16px; color: var(--text); background: var(--input-bg); transition: background .25s, border-color .25s;
+}
+select {
+  -webkit-appearance: none; -moz-appearance: none; appearance: none;
+  padding-right: 40px; line-height: 1.4;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat; background-position: right 14px center;
 }
 select:focus, input:focus { outline: none; border-color: var(--blue); }
 .hint { font-size: 13px; color: var(--gray); margin-top: 6px; }
