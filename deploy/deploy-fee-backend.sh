@@ -20,14 +20,11 @@ echo "=== 컨테이너 재시작 ==="
 docker restart fee-calculator-app
 
 echo "=== 기동 대기 ==="
-for i in $(seq 1 30); do
-  # 컨테이너 내부에서 요율 API 응답 확인
-  if docker exec fee-calculator-app sh -c "wget -qO- http://localhost:8091/api/v1/fee/rates >/dev/null 2>&1"; then
-    echo "✅ 백엔드 정상 기동 완료 (${i}초)"
+for i in $(seq 1 40); do
+  if docker logs fee-calculator-app 2>&1 | tail -8 | grep -q "Started FeeCalculatorApplication"; then
+    echo "✅ 백엔드 정상 기동 완료 (${i}초) → http://devforin.mooo.com:3001"
     exit 0
   fi
   sleep 1
 done
-echo "⚠️  30초 내 기동 실패: docker logs fee-calculator-app"
-
-echo "=== 완료 ==="
+echo "⚠️  40초 내 기동 확인 실패. 로그 확인: docker logs fee-calculator-app --tail 30"
