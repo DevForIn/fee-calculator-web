@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { toPng } from 'html-to-image';
 import { api } from './api';
 import { useAuth } from './useAuth';
 import { AuthModal } from './components/AuthModal';
@@ -31,6 +32,37 @@ const FALLBACK_RATES: RatesResponse = {
 export default function App() {
   const auth = useAuth();
   const kakaoHandled = useRef(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
+  const [sharing, setSharing] = useState(false);
+
+  async function shareResult() {
+    if (!shareCardRef.current || !result) return;
+    setSharing(true);
+    try {
+      const dataUrl = await toPng(shareCardRef.current, { pixelRatio: 2, cacheBust: true });
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], 'showmefee.png', { type: 'image/png' });
+
+      // Web Share API 지원 시 공유, 아니면 다운로드
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: '내가 내는 결제 수수료',
+          text: '나는 1년에 수수료를 이만큼 내고 있었다니… showmefee.com에서 계산해봐',
+        });
+      } else {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = 'showmefee-result.png';
+        a.click();
+      }
+    } catch (e) {
+      console.warn('공유 실패:', e);
+      setErrorMsg('이미지 생성에 실패했어요. 다시 시도해주세요.');
+    } finally {
+      setSharing(false);
+    }
+  }
 
   const [theme, setTheme] = useState<'light' | 'dark'>(
     () => (localStorage.getItem('fee-theme') as 'light' | 'dark') ||
@@ -360,8 +392,50 @@ export default function App() {
             ※ 본 계산은 공개 자료 기반 추정치이며, 실제 수수료는 가맹점 등급·계약·매출 구간에 따라 달라집니다.
             배달앱 중개이용료는 부가세·배달비 별도 기준입니다.
           </p>
+
+          {auth.member && (
+            <button className="share-btn" onClick={shareResult} disabled={sharing}>
+              {sharing ? '이미지 만드는 중...' : '📤 결과 이미지로 공유하기'}
+            </button>
+          )}
+
+          {/* 공유용 카드 (화면 밖, 이미지 캡처 전용) */}
+          <div className="share-capture" ref={shareCardRef} aria-hidden>
+            <div className="sc-brand">💰 showmefee.com</div>
+            <div className="sc-title">우리 가게가 1년에 내는<br/>결제 수수료는?</div>
+            <div className="sc-amount">{won(result.yearlyTotalFee)}</div>
+            <div className="sc-sub">월 {won(result.monthlyTotalFee)}</div>
+            <div className="sc-lines">
+              {result.lines.slice(0, 3).map((r) => (
+                <div key={r.channel} className="sc-line">
+                  <span>{r.label}</span><span>{won(r.fee)}</span>
+                </div>
+              ))}
+            </div>
+            <div className="sc-cta">나도 계산해보기 → showmefee.com</div>
+          </div>
         </div>
       )}
+
+      {/* SEO / 안내 콘텐츠 (검색 노출용) */}
+      <section className="seo-content">
+        <h2>배달앱 수수료 계산기</h2>
+        <p>
+          배달의민족, 쿠팡이츠, 요기요를 사용하는 자영업자라면 실제로 매출의 상당 부분이
+          수수료로 나갑니다. 이 계산기는 <b>중개이용료</b>뿐 아니라 <b>결제수수료</b>와
+          <b> 건당 배달비</b>까지 합산해 배달앱 <b>실비용</b>을 계산합니다.
+        </p>
+        <h3>이런 걸 계산할 수 있어요</h3>
+        <ul>
+          <li>배민·쿠팡이츠·요기요 중개수수료 (2025 상생요금제 기준)</li>
+          <li>카드 우대수수료 (연매출 구간별 0.5~2.0%)</li>
+          <li>간편결제 수수료</li>
+          <li>배달앱 실비용 = 중개료 + 결제수수료 + 배달비</li>
+        </ul>
+        <p className="seo-note">
+          ※ 수수료율은 공개 자료 기반 추정치이며, 실제 요율은 계약·가맹점 등급에 따라 달라질 수 있습니다.
+        </p>
+      </section>
 
       <footer>© 결제 수수료 계산기 · 참고용 추정치</footer>
 

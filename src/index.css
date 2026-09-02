@@ -118,6 +118,39 @@ button.calc:disabled { opacity: .5; cursor: not-allowed; }
 
 footer { text-align: center; color: var(--gray); font-size: 12px; margin-top: 30px; }
 
+/* 공유 버튼 */
+.share-btn {
+  width: 100%; margin-top: 14px; padding: 14px; border-radius: 12px;
+  border: 1.5px solid var(--blue); background: transparent; color: var(--blue);
+  font-size: 15px; font-weight: 800; cursor: pointer;
+}
+.share-btn:active { transform: translateY(1px); }
+.share-btn:disabled { opacity: .5; }
+
+/* 공유용 캡처 카드 (화면 밖, 이미지 캡처 전용) */
+.share-capture {
+  position: absolute; left: -9999px; top: 0;
+  width: 500px; padding: 44px 40px; box-sizing: border-box;
+  background: linear-gradient(160deg, #1b2a4a, #0a0f1c); color: #fff;
+  font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif;
+}
+.sc-brand { font-size: 20px; font-weight: 800; color: #7ea6ff; margin-bottom: 24px; }
+.sc-title { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 18px; }
+.sc-amount { font-size: 52px; font-weight: 900; color: #7ea6ff; letter-spacing: -2px; }
+.sc-sub { font-size: 18px; opacity: .8; margin-top: 6px; margin-bottom: 28px; }
+.sc-lines { border-top: 1px solid rgba(255,255,255,.2); padding-top: 18px; }
+.sc-line { display: flex; justify-content: space-between; font-size: 17px; padding: 7px 0; font-weight: 600; }
+.sc-cta { margin-top: 28px; text-align: center; font-size: 16px; font-weight: 700; color: #7ea6ff; }
+
+/* SEO 콘텐츠 */
+.seo-content { margin-top: 40px; padding: 24px; border-radius: 14px; background: var(--card-bg); border: 1px solid var(--line); }
+.seo-content h2 { font-size: 18px; margin-bottom: 12px; }
+.seo-content h3 { font-size: 15px; margin: 16px 0 8px; }
+.seo-content p { font-size: 14px; color: var(--text); line-height: 1.7; }
+.seo-content ul { margin: 0 0 0 18px; }
+.seo-content li { font-size: 14px; color: var(--text); line-height: 1.8; }
+.seo-content .seo-note { font-size: 12px; color: var(--gray); margin-top: 14px; }
+
 /* B단계: 배달 실비용 토글 */
 .realcost-box { background: var(--blue-light); border-radius: 12px; padding: 16px; }
 .toggle-row { display: flex; align-items: flex-start; gap: 10px; font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 0; }
