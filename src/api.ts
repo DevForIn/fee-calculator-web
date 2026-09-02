@@ -67,4 +67,16 @@ export const api = {
     request<{ valid: boolean }>('/biz/verify', {
       method: 'POST', body: JSON.stringify({ businessNumber }),
     }),
+
+  // 관리자 통계
+  getStats: () => request<StatsSummary>('/stats/summary'),
 };
+
+export interface StatsSummary {
+  totalCalculations: number;
+  totalMembers: number;
+  byIndustry: { industry: string; count: number }[];
+  avgMonthlyRevenue?: number;
+  avgMonthlyFee?: number;
+  avgChannelMix?: { card: number; baemin: number; coupang: number; yogiyo: number; pay: number };
+}
