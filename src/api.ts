@@ -3,7 +3,12 @@ import type {
   AuthResponse, SignupRequest, LoginRequest, Member,
 } from './types';
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8091/api/v1';
+// API 주소:
+// - VITE_API_BASE 있으면 그 값 (배포: /api/v1)
+// - 없으면 dev는 localhost, 그 외(배포)는 상대경로 /api/v1 (nginx 프록시)
+const API_BASE =
+  (import.meta.env.VITE_API_BASE as string | undefined) ??
+  (import.meta.env.DEV ? 'http://localhost:8091/api/v1' : '/api/v1');
 
 const TOKEN_KEY = 'fee-token';
 
