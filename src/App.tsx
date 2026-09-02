@@ -347,12 +347,18 @@ export default function App() {
             <div className="hint">중개이용료만이 아니라, 실제 나가는 결제수수료·배달비까지 합산해요.</div>
             {deliveryRealCost && (
               <div style={{ marginTop: 12 }}>
-                <label>월 배달 주문 건수</label>
+                <label>한 달 배달 주문 건수</label>
                 <input className="text-input" inputMode="numeric"
                   value={monthlyOrderCount ? monthlyOrderCount.toLocaleString('ko-KR') : ''}
                   onChange={(e) => setMonthlyOrderCount(Number(e.target.value.replace(/[^0-9]/g, '')) || 0)}
-                  placeholder="예: 800" />
-                <div className="hint">건당 배달비 × 주문 건수로 배달비를 계산합니다.</div>
+                  placeholder="예: 500" />
+                <div className="hint">
+                  배달앱으로 <b>한 달에 받는 주문 수</b>예요. (하루 평균 주문 × 영업일)<br/>
+                  배달비는 <b>1건당 약 2,900원</b>씩 부담하므로, 주문이 많을수록 배달비가 커집니다.
+                  {monthlyOrderCount > 0 && (
+                    <><br/>→ 예상 월 배달비: 약 {won(monthlyOrderCount * 2900)}</>
+                  )}
+                </div>
               </div>
             )}
           </div>
