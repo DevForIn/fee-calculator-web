@@ -50,6 +50,8 @@ export const api = {
     request<AuthResponse>('/auth/signup', { method: 'POST', body: JSON.stringify(body) }),
   login: (body: LoginRequest) =>
     request<AuthResponse>('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  kakaoLogin: (code: string) =>
+    request<AuthResponse>('/auth/kakao', { method: 'POST', body: JSON.stringify({ code }) }),
 
   // 회원
   getMe: () => request<Member>('/member/me'),

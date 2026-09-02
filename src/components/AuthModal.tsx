@@ -44,6 +44,14 @@ export function AuthModal({ auth, onClose, onDone }: Props) {
     alert(`${name} 로그인은 곧 지원 예정입니다. (OAuth 앱 등록 후 활성화)`);
   }
 
+  function kakaoStart() {
+    const key = import.meta.env.VITE_KAKAO_REST_KEY;
+    const redirect = import.meta.env.VITE_KAKAO_REDIRECT_URI;
+    if (!key || !redirect) { alert('카카오 설정이 없습니다.'); return; }
+    const url = `https://kauth.kakao.com/oauth/authorize?client_id=${key}&redirect_uri=${encodeURIComponent(redirect)}&response_type=code`;
+    window.location.href = url;
+  }
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -86,7 +94,7 @@ export function AuthModal({ auth, onClose, onDone }: Props) {
         <div className="social">
           <button className="google" onClick={() => socialTodo('구글')}>구글로 시작하기</button>
           <button className="naver" onClick={() => socialTodo('네이버')}>네이버로 시작하기</button>
-          <button className="kakao" onClick={() => socialTodo('카카오')}>카카오로 시작하기</button>
+          <button className="kakao" onClick={kakaoStart}>카카오로 시작하기</button>
         </div>
 
         <div className="switch">

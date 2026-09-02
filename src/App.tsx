@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { api } from './api';
 import { useAuth } from './useAuth';
 import { AuthModal } from './components/AuthModal';
@@ -30,6 +30,7 @@ const FALLBACK_RATES: RatesResponse = {
 
 export default function App() {
   const auth = useAuth();
+  const kakaoHandled = useRef(false);
 
   const [theme, setTheme] = useState<'light' | 'dark'>(
     () => (localStorage.getItem('fee-theme') as 'light' | 'dark') ||
@@ -66,6 +67,23 @@ export default function App() {
   useEffect(() => {
     if (auth.member) applyMember(auth.member);
   }, [auth.member]);
+
+  // 카카오 콜백 처리: /oauth/kakao?code=... 로 돌아오면 로그인 실행
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const isKakaoCallback = window.location.pathname.includes('/oauth/kakao');
+    if (code && isKakaoCallback && !kakaoHandled.current) {
+      kakaoHandled.current = true; // 1회용 인가코드 중복 사용 방지 (StrictMode 대응)
+      auth.kakaoLogin(code)
+        .then(() => { window.history.replaceState({}, '', import.meta.env.BASE_URL); })
+        .catch((e) => {
+          setErrorMsg(e instanceof Error ? e.message : '카카오 로그인 실패');
+          window.history.replaceState({}, '', import.meta.env.BASE_URL);
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function applyMember(m: Member) {
     setCardTier(m.cardTier);

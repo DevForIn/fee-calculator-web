@@ -33,10 +33,17 @@ export function useAuth() {
     return res.member;
   }, []);
 
+  const kakaoLogin = useCallback(async (code: string) => {
+    const res = await api.kakaoLogin(code);
+    tokenStore.set(res.token);
+    setMember(res.member);
+    return res.member;
+  }, []);
+
   const logout = useCallback(() => {
     tokenStore.clear();
     setMember(null);
   }, []);
 
-  return { member, loading, login, signup, logout, setMember };
+  return { member, loading, login, signup, kakaoLogin, logout, setMember };
 }
