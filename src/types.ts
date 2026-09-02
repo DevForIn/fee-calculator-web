@@ -16,6 +16,8 @@ export interface FeeRequest {
   payPercent: number;
   cardTier: CardTier;
   deliveryTier: DeliveryTier;
+  deliveryRealCost: boolean;   // 배달앱 실비용(중개+결제+배달비) 모드
+  monthlyOrderCount: number;   // 월 배달 주문 건수
 }
 
 // 계산 결과 채널별 내역
@@ -25,6 +27,9 @@ export interface FeeLine {
   rate: number;
   channelRevenue: number;
   fee: number;
+  mediationFee: number;  // 중개이용료 (배달 실비용 모드)
+  paymentFee: number;    // 결제수수료
+  deliveryFee: number;   // 배달비 합계
 }
 
 // POST /api/v1/fee/calculate 응답
@@ -39,6 +44,8 @@ export interface RatesResponse {
   cardTiers: Record<CardTier, number>;
   delivery: Record<'baemin' | 'coupang' | 'yogiyo', Record<DeliveryTier, number>>;
   payRate: number;
+  deliveryPaymentRate: number;
+  deliveryFeePerOrder: Record<DeliveryTier, number>;
   labels: Record<Channel, string>;
 }
 

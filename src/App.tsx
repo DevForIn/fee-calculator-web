@@ -3,7 +3,7 @@ import { api } from './api';
 import { useAuth } from './useAuth';
 import { AuthModal } from './components/AuthModal';
 import type {
-  CardTier, DeliveryTier, Industry, FeeResponse, FeeLine, RatesResponse, Member,
+  CardTier, DeliveryTier, Industry, FeeRequest, FeeResponse, FeeLine, RatesResponse, Member,
 } from './types';
 import {
   won, toKorean, CARD_TIER_LABELS, DELIVERY_TIER_LABELS,
@@ -23,6 +23,8 @@ const FALLBACK_RATES: RatesResponse = {
     yogiyo: { top: 0.078, mid: 0.068, bottom: 0.02 },
   },
   payRate: 0.02,
+  deliveryPaymentRate: 0.03,
+  deliveryFeePerOrder: { top: 2900, mid: 2600, bottom: 2400 },
   labels: CHANNEL_NAMES,
 };
 
@@ -47,8 +49,11 @@ export default function App() {
   const [percents, setPercents] = useState<Percents>(DEFAULT_PERCENTS);
   const [cardTier, setCardTier] = useState<CardTier>('t4');
   const [deliveryTier, setDeliveryTier] = useState<DeliveryTier>('top');
+  const [deliveryRealCost, setDeliveryRealCost] = useState<boolean>(false);
+  const [monthlyOrderCount, setMonthlyOrderCount] = useState<number>(500);
   const [result, setResult] = useState<FeeResponse | null>(null);
   const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string>('');
 
   // 요율 로드
   useEffect(() => {
@@ -87,36 +92,65 @@ export default function App() {
   function calcLocal(): FeeResponse {
     const cardRate = rates.cardTiers[cardTier];
     const lines: FeeLine[] = [];
-    const push = (ch: keyof Percents, rate: number) => {
+    const deliveryPctSum = percents.baemin + percents.coupang + percents.yogiyo;
+    const perOrder = rates.deliveryFeePerOrder[deliveryTier];
+    const totalDeliveryFee = deliveryRealCost ? Math.max(0, monthlyOrderCount) * perOrder : 0;
+
+    const pushSimple = (ch: keyof Percents, rate: number) => {
       if (percents[ch] <= 0) return;
       const channelRevenue = Math.round((revenue * percents[ch]) / 100);
       const fee = Math.round(channelRevenue * rate);
-      lines.push({ channel: ch, label: rates.labels[ch], rate, channelRevenue, fee });
+      lines.push({ channel: ch, label: rates.labels[ch], rate, channelRevenue, fee,
+        mediationFee: 0, paymentFee: 0, deliveryFee: 0 });
     };
-    push('card', cardRate);
-    push('baemin', rates.delivery.baemin[deliveryTier]);
-    push('coupang', rates.delivery.coupang[deliveryTier]);
-    push('yogiyo', rates.delivery.yogiyo[deliveryTier]);
-    push('pay', rates.payRate);
+    const pushDelivery = (ch: 'baemin' | 'coupang' | 'yogiyo') => {
+      if (percents[ch] <= 0) return;
+      const channelRevenue = Math.round((revenue * percents[ch]) / 100);
+      const medRate = rates.delivery[ch][deliveryTier];
+      const mediationFee = Math.round(channelRevenue * medRate);
+      if (!deliveryRealCost) {
+        lines.push({ channel: ch, label: rates.labels[ch], rate: medRate, channelRevenue,
+          fee: mediationFee, mediationFee: 0, paymentFee: 0, deliveryFee: 0 });
+        return;
+      }
+      const paymentFee = Math.round(channelRevenue * rates.deliveryPaymentRate);
+      const deliveryFee = deliveryPctSum > 0
+        ? Math.round(totalDeliveryFee * (percents[ch] / deliveryPctSum)) : 0;
+      const fee = mediationFee + paymentFee + deliveryFee;
+      const effRate = channelRevenue > 0 ? fee / channelRevenue : medRate;
+      lines.push({ channel: ch, label: rates.labels[ch], rate: effRate, channelRevenue, fee,
+        mediationFee, paymentFee, deliveryFee });
+    };
+
+    pushSimple('card', cardRate);
+    pushDelivery('baemin');
+    pushDelivery('coupang');
+    pushDelivery('yogiyo');
+    pushSimple('pay', rates.payRate);
     const monthlyTotalFee = lines.reduce((a, b) => a + b.fee, 0);
     lines.sort((a, b) => b.fee - a.fee);
     return { monthlyTotalFee, yearlyTotalFee: monthlyTotalFee * 12, lines };
   }
 
   async function calculate() {
-    if (total !== 100) { alert('결제 채널 비중 합계를 100%로 맞춰주세요.'); return; }
-    if (revenue <= 0) { alert('월 매출을 입력해주세요.'); return; }
+    setErrorMsg('');
+    if (total !== 100) { setErrorMsg(`결제 채널 비중 합계가 100%가 아닙니다. (현재 ${total}%)`); return; }
+    if (revenue <= 0) { setErrorMsg('월 매출을 올바르게 입력해주세요.'); return; }
+    if (deliveryRealCost && monthlyOrderCount < 0) { setErrorMsg('월 배달 주문 건수를 확인해주세요.'); return; }
     setBusy(true);
     try {
-      const req = {
+      const req: FeeRequest = {
         industry, monthlyRevenue: revenue,
         cardPercent: percents.card, baeminPercent: percents.baemin,
         coupangPercent: percents.coupang, yogiyoPercent: percents.yogiyo,
         payPercent: percents.pay, cardTier, deliveryTier,
+        deliveryRealCost, monthlyOrderCount,
       };
       const res = backendOk ? await api.calculate(req) : calcLocal();
       setResult(res);
-    } catch {
+    } catch (e) {
+      // 백엔드 오류 시 로컬 폴백 (조용히 대체)
+      console.warn('백엔드 계산 실패, 로컬 폴백:', e);
       setResult(calcLocal());
     } finally {
       setBusy(false);
@@ -212,6 +246,29 @@ export default function App() {
           </div>
         )}
 
+        {anyDelivery && (
+          <div className="field realcost-box">
+            <label className="toggle-row">
+              <input type="checkbox" checked={deliveryRealCost}
+                onChange={(e) => setDeliveryRealCost(e.target.checked)} />
+              <span>배달앱 <b>실비용</b>으로 계산 (중개료 + 결제수수료 + 배달비)</span>
+            </label>
+            <div className="hint">중개이용료만이 아니라, 실제 나가는 결제수수료·배달비까지 합산해요.</div>
+            {deliveryRealCost && (
+              <div style={{ marginTop: 12 }}>
+                <label>월 배달 주문 건수</label>
+                <input className="text-input" inputMode="numeric"
+                  value={monthlyOrderCount ? monthlyOrderCount.toLocaleString('ko-KR') : ''}
+                  onChange={(e) => setMonthlyOrderCount(Number(e.target.value.replace(/[^0-9]/g, '')) || 0)}
+                  placeholder="예: 800" />
+                <div className="hint">건당 배달비 × 주문 건수로 배달비를 계산합니다.</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {errorMsg && <div className="form-error">{errorMsg}</div>}
+
         <button className="calc" disabled={busy} onClick={calculate}>
           {busy ? '계산 중...' : '수수료 계산하기'}
         </button>
@@ -229,8 +286,12 @@ export default function App() {
           <div className="card" style={{ position: 'relative' }}>
             <ul className={`breakdown ${!auth.member ? 'locked' : ''}`}>
               {result.lines.map((r, i) => {
+                const isDelivery = DELIVERY_CHANNELS.includes(r.channel);
+                const isRealCost = isDelivery && (r.mediationFee > 0 || r.deliveryFee > 0);
                 let sub: string;
-                if (DELIVERY_CHANNELS.includes(r.channel))
+                if (isRealCost)
+                  sub = `실효율 ${(r.rate * 100).toFixed(1)}% · ${DELIVERY_TIER_SHORT[deliveryTier]} (실비용)`;
+                else if (isDelivery)
                   sub = `${(r.rate * 100).toFixed(1)}% · ${DELIVERY_TIER_SHORT[deliveryTier]} (중개이용료, 배달비 별도)`;
                 else if (r.channel === 'card')
                   sub = `${(r.rate * 100).toFixed(2)}% · ${CARD_TIER_LABELS[cardTier].split('—')[0].trim()}`;
@@ -241,6 +302,11 @@ export default function App() {
                       <span className="ch-name">{r.label}</span>
                       {i === 0 && <span className="tag">가장 비쌈</span>}
                       <div className="ch-sub">{sub}</div>
+                      {isRealCost && (
+                        <div className="ch-breakdown">
+                          중개료 {won(r.mediationFee)} · 결제 {won(r.paymentFee)} · 배달비 {won(r.deliveryFee)}
+                        </div>
+                      )}
                     </div>
                     <div className="ch-amt">{won(r.fee)}<small>월 기준</small></div>
                   </li>
