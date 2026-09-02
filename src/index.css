@@ -84,11 +84,12 @@ button.calc:disabled { opacity: .5; cursor: not-allowed; }
   padding: 12px 22px; font-size: 15px; font-weight: 800; cursor: pointer;
 }
 .lock-overlay button:active { transform: translateY(1px); }
-.breakdown li { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.breakdown li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--line); }
 .breakdown li:last-child { border-bottom: none; }
+.breakdown li > div:first-child { min-width: 0; flex: 1; }
 .breakdown .ch-name { font-weight: 700; }
 .breakdown .ch-sub { font-size: 13px; color: var(--gray); font-weight: 400; }
-.breakdown .ch-amt { font-weight: 800; text-align: right; }
+.breakdown .ch-amt { font-weight: 800; text-align: right; white-space: nowrap; flex-shrink: 0; }
 .breakdown .ch-amt small { color: var(--gray); font-weight: 500; font-size: 12px; display: block; }
 .tag { display: inline-block; font-size: 11px; background: var(--blue-light); color: var(--blue); padding: 2px 8px; border-radius: 20px; margin-left: 6px; font-weight: 700; vertical-align: middle; }
 .tip { background: var(--blue-light); border-radius: 12px; padding: 16px; font-size: 14px; }
