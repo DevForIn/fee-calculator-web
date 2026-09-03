@@ -37,7 +37,8 @@ export default function App() {
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const SITE_URL = import.meta.env.VITE_SITE_URL ?? window.location.origin;
+  const SITE_URL = import.meta.env.VITE_SITE_URL ??
+    (typeof window !== 'undefined' ? window.location.origin : 'https://showmefee.com');
 
   // 링크 공유 (심리테스트 방식): 모바일=공유창, PC=링크 복사
   async function shareLink() {
@@ -99,10 +100,13 @@ export default function App() {
     }
   }
 
-  const [theme, setTheme] = useState<'light' | 'dark'>(
-    () => (localStorage.getItem('fee-theme') as 'light' | 'dark') ||
-      (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
-  );
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  // 브라우저 마운트 후 저장된 테마 복원 (SSR 안전)
+  useEffect(() => {
+    const saved = (localStorage.getItem('fee-theme') as 'light' | 'dark' | null)
+      || (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    setTheme(saved);
+  }, []);
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('fee-theme', theme);

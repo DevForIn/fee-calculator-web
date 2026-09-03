@@ -138,6 +138,15 @@ button.calc:disabled { opacity: .5; cursor: not-allowed; }
 
 footer { text-align: center; color: var(--gray); font-size: 12px; margin-top: 30px; }
 
+/* 랜딩 CTA 박스 */
+.cta-box { background: var(--blue-light); border-radius: 16px; padding: 20px; margin-bottom: 18px; text-align: center; }
+.cta-box p { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 14px; font-weight: 600; }
+.cta-box b { color: var(--blue); }
+/* 관련 계산기 링크 */
+.related-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.related-link { display: inline-block; padding: 8px 14px; border-radius: 20px; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--text); text-decoration: none; background: var(--bg); }
+.related-link.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+
 /* 관리자 대시보드 */
 .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
 .stat-box { background: var(--card-bg); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
