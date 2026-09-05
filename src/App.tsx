@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toPng } from 'html-to-image';
-import { api } from './api';
-import { useAuth } from './useAuth';
-import { AuthModal } from './components/AuthModal';
 import { buildSavingReport } from './savingReport';
 import type {
-  CardTier, DeliveryTier, Industry, FeeRequest, FeeResponse, FeeLine, RatesResponse, Member,
+  CardTier, DeliveryTier, Industry, FeeResponse, FeeLine, RatesResponse,
 } from './types';
 import {
   won, toKorean, CARD_TIER_LABELS, DELIVERY_TIER_LABELS,
@@ -31,8 +28,6 @@ const FALLBACK_RATES: RatesResponse = {
 };
 
 export default function App() {
-  const auth = useAuth();
-  const kakaoHandled = useRef(false);
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -112,10 +107,7 @@ export default function App() {
     localStorage.setItem('fee-theme', theme);
   }, [theme]);
 
-  const [rates, setRates] = useState<RatesResponse>(FALLBACK_RATES);
-  const [backendOk, setBackendOk] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
-
+  const rates = FALLBACK_RATES;
   const [industry, setIndustry] = useState<Industry>('food');
   const [revenue, setRevenue] = useState<number>(20000000);
   const [percents, setPercents] = useState<Percents>(DEFAULT_PERCENTS);
@@ -126,53 +118,6 @@ export default function App() {
   const [result, setResult] = useState<FeeResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
-
-  // 요율 로드
-  useEffect(() => {
-    api.getRates()
-      .then((r) => { setRates(r); setBackendOk(true); })
-      .catch(() => setBackendOk(false));
-  }, []);
-
-  // 로그인되면 내 설정으로 자동 세팅
-  useEffect(() => {
-    if (auth.member) applyMember(auth.member);
-  }, [auth.member]);
-
-  // 소셜 콜백 처리: /oauth/{provider}?code=... 로 돌아오면 로그인 실행
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    const path = window.location.pathname;
-    if (!code || kakaoHandled.current) return;
-
-    let p: Promise<Member> | null = null;
-    if (path.includes('/oauth/kakao')) p = auth.kakaoLogin(code);
-    else if (path.includes('/oauth/naver')) p = auth.naverLogin(code, params.get('state') ?? '');
-    else if (path.includes('/oauth/google')) p = auth.googleLogin(code);
-
-    if (p) {
-      kakaoHandled.current = true; // 1회용 인가코드 중복 사용 방지 (StrictMode 대응)
-      p.then(() => { window.history.replaceState({}, '', import.meta.env.BASE_URL); })
-       .catch((e) => {
-         setErrorMsg(e instanceof Error ? e.message : '소셜 로그인 실패');
-         window.history.replaceState({}, '', import.meta.env.BASE_URL);
-       });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function applyMember(m: Member) {
-    setCardTier(m.cardTier);
-    setDeliveryTier(m.deliveryTier);
-    const sum = m.cardPercent + m.baeminPercent + m.coupangPercent + m.yogiyoPercent + m.payPercent;
-    if (sum > 0) {
-      setPercents({
-        card: m.cardPercent, baemin: m.baeminPercent, coupang: m.coupangPercent,
-        yogiyo: m.yogiyoPercent, pay: m.payPercent,
-      });
-    }
-  }
 
   const total = useMemo(
     () => percents.card + percents.baemin + percents.coupang + percents.yogiyo + percents.pay,
@@ -227,30 +172,15 @@ export default function App() {
     return { monthlyTotalFee, yearlyTotalFee: monthlyTotalFee * 12, lines };
   }
 
-  async function calculate() {
+  function calculate() {
     setErrorMsg('');
     if (total !== 100) { setErrorMsg(`결제 채널 비중 합계가 100%가 아닙니다. (현재 ${total}%)`); return; }
     if (revenue <= 0) { setErrorMsg('월 매출을 올바르게 입력해주세요.'); return; }
     if (deliveryRealCost && monthlyOrderCount < 0) { setErrorMsg('월 배달 주문 건수를 확인해주세요.'); return; }
     setBusy(true);
-    try {
-      const req: FeeRequest = {
-        industry, monthlyRevenue: revenue,
-        cardPercent: percents.card, baeminPercent: percents.baemin,
-        coupangPercent: percents.coupang, yogiyoPercent: percents.yogiyo,
-        payPercent: percents.pay, cardTier, deliveryTier,
-        deliveryRealCost, monthlyOrderCount,
-      };
-      const res = backendOk ? await api.calculate(req) : calcLocal();
-      setResult(res);
-    } catch (e) {
-      // 백엔드 오류 시 로컬 폴백 (조용히 대체)
-      console.warn('백엔드 계산 실패, 로컬 폴백:', e);
-      setResult(calcLocal());
-    } finally {
-      setBusy(false);
-      setTimeout(() => document.getElementById('result')?.scrollIntoView({ behavior: 'smooth' }), 50);
-    }
+    setResult(calcLocal());
+    setBusy(false);
+    setTimeout(() => document.getElementById('result')?.scrollIntoView({ behavior: 'smooth' }), 50);
   }
 
   const channelRows: (keyof Percents)[] = ['card', 'baemin', 'coupang', 'yogiyo', 'pay'];
@@ -258,11 +188,6 @@ export default function App() {
   return (
     <div className="wrap">
       <div className="topbar">
-        {auth.member ? (
-          <button className="icon-btn" onClick={auth.logout}>{auth.member.nickname} · 로그아웃</button>
-        ) : (
-          <button className="icon-btn" onClick={() => setShowAuth(true)}>로그인</button>
-        )}
         <button className="icon-btn round" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
@@ -273,12 +198,6 @@ export default function App() {
         <p>카드·간편결제·배달앱까지, 우리 가게 결제 수수료를 한 번에.</p>
       </header>
 
-      {!auth.member && (
-        <div className="login-banner">
-          <span><b>로그인</b>하면 매출 구간·채널 설정이 저장돼요.</span>
-          <button onClick={() => setShowAuth(true)}>로그인 / 가입</button>
-        </div>
-      )}
 
       <div className="card">
         <div className="field">
@@ -373,7 +292,6 @@ export default function App() {
         <button className="calc" disabled={busy} onClick={calculate}>
           {busy ? '계산 중...' : '수수료 계산하기'}
         </button>
-        <div className="api-badge">{backendOk ? '✓ 서버 연결됨 (최신 요율 적용)' : '· 오프라인 모드 (내장 요율 사용)'}</div>
       </div>
 
       {result && (
@@ -393,8 +311,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="card" style={{ position: 'relative' }}>
-            <ul className={`breakdown ${!auth.member ? 'locked' : ''}`}>
+          <div className="card">
+            <ul className="breakdown">
               {result.lines.map((r, i) => {
                 const isDelivery = DELIVERY_CHANNELS.includes(r.channel);
                 const isRealCost = isDelivery && (r.mediationFee > 0 || r.deliveryFee > 0);
@@ -425,26 +343,17 @@ export default function App() {
                 );
               })}
             </ul>
-            {!auth.member && (
-              <div className="lock-overlay">
-                <p>채널별 상세 수수료가 궁금하다면?</p>
-                <button onClick={() => setShowAuth(true)}>로그인하고 전부 확인하기</button>
-              </div>
-            )}
           </div>
 
-          {auth.member && (
-            <SavingReport result={result}
-              ctx={{ revenue, cardTier, deliveryTier, cardRate: rates.cardTiers[cardTier] }} />
-          )}
+          <SavingReport result={result}
+            ctx={{ revenue, cardTier, deliveryTier, cardRate: rates.cardTiers[cardTier] }} />
 
           <p className="disclaimer">
             ※ 본 계산은 공개 자료 기반 추정치이며, 실제 수수료는 가맹점 등급·계약·매출 구간에 따라 달라집니다.
             배달앱 중개이용료는 부가세·배달비 별도 기준입니다.
           </p>
 
-          {auth.member && (
-            <div className="share-actions">
+          <div className="share-actions">
               <button className="share-btn primary" onClick={shareLink}>
                 {copied ? '✓ 링크 복사됨!' : '🔗 친구에게 공유하기'}
               </button>
@@ -452,7 +361,6 @@ export default function App() {
                 {sharing ? '만드는 중...' : '📥 결과 이미지 저장'}
               </button>
             </div>
-          )}
 
           {/* 공유용 카드 (화면 밖, 이미지 캡처 전용) */}
           <div className="share-capture" ref={shareCardRef} aria-hidden>
@@ -493,11 +401,6 @@ export default function App() {
       </section>
 
       <footer>© 결제 수수료 계산기 · 참고용 추정치</footer>
-
-      {showAuth && (
-        <AuthModal auth={auth} onClose={() => setShowAuth(false)}
-          onDone={(m) => { applyMember(m); setShowAuth(false); }} />
-      )}
     </div>
   );
 }
