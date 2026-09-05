@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Head } from 'vite-react-ssg';
 import type { LandingConfig } from '../landings';
 import { LANDINGS } from '../landings';
-import { RATES, CARD_TIER_OPTIONS, DELIVERY_TIER_OPTIONS, YOGIYO_TIER_OPTIONS, getDeliveryRate } from '../landingRates';
+import { RATES, CARD_TIER_OPTIONS, DELIVERY_TIER_OPTIONS, YOGIYO_TIER_OPTIONS, NAVERPAY_TIER_OPTIONS, SMARTSTORE_TIER_OPTIONS, KAKAOPAY_TIER_OPTIONS, getDeliveryRate } from '../landingRates';
 import { won, toKorean } from '../utils';
 import { FeedbackBar } from './FeedbackBar';
 
@@ -30,6 +30,15 @@ export function LandingPage({ config }: Props) {
   const isDelivery = config.type === 'delivery';
   const isSelf = config.type === 'self-employed';
   const isYogiyo = config.platform === 'yogiyo';
+  const isNaverpay = config.type === 'naverpay';
+  const isKakaopay = config.type === 'kakaopay';
+  const isSmartstore = config.type === 'smartstore';
+  const isPayLike = isNaverpay || isKakaopay || isSmartstore;
+
+  // 간편결제/스토어 매출등급 (n1~n5 / k1~k5 / s1~s5), 기본 영세
+  const payTierInit = isNaverpay ? 'n1' : isKakaopay ? 'k1' : 's1';
+  const [payTier, setPayTier] = useState(payTierInit);
+  const [shoppingInflow, setShoppingInflow] = useState(false); // 스마트스토어 쇼핑 유입 여부
 
   // 요기요는 주문건수 구간(y1~y4), 그 외 배달앱은 매출 구간(top/mid/bottom)
   const [deliveryTier2, setDeliveryTier2] = useState(isYogiyo ? 'y1' : 'top');
@@ -57,6 +66,29 @@ export function LandingPage({ config }: Props) {
       lines.push({ label: '결제수수료 (약 3%)', amount: payment });
       lines.push({ label: `배달비 (${orderCount.toLocaleString('ko-KR')}건)`, amount: delivery });
       monthly = mediation + payment + delivery;
+    } else if (isPayLike) {
+      if (isNaverpay) {
+        const rate = RATES.naverPayTiers[payTier];
+        const fee = Math.round(channelRevenue * rate);
+        lines.push({ label: `네이버페이 결제 수수료 (${(rate * 100).toFixed(2)}%)`, amount: fee });
+        monthly = fee;
+      } else if (isKakaopay) {
+        const rate = RATES.kakaoPayTiers[payTier];
+        const fee = Math.round(channelRevenue * rate);
+        lines.push({ label: `카카오페이 결제 수수료 (${(rate * 100).toFixed(2)}%)`, amount: fee });
+        monthly = fee;
+      } else {
+        // 스마트스토어: 통합 수수료 (+ 쇼핑연동 2% 옵션)
+        const rate = RATES.smartstoreTiers[payTier];
+        const base = Math.round(channelRevenue * rate);
+        lines.push({ label: `주문관리·결제 수수료 (${(rate * 100).toFixed(1)}%)`, amount: base });
+        monthly = base;
+        if (shoppingInflow) {
+          const shopping = Math.round(channelRevenue * RATES.smartstoreShoppingRate);
+          lines.push({ label: '네이버쇼핑 연동 수수료 (2%)', amount: shopping });
+          monthly += shopping;
+        }
+      }
     } else {
       // self-employed: 종합 간이 (카드+배달+간편 대략)
       const cardFee = Math.round(revenue * 0.5 * RATES.cardTiers[cardTier]);
@@ -111,7 +143,7 @@ export function LandingPage({ config }: Props) {
 
         {!isSelf && (
           <div className="field">
-            <label>{isCard ? '카드 매출 비중' : '배달 매출 비중'} (%)</label>
+            <label>{isCard ? '카드 매출 비중' : isPayLike ? (isSmartstore ? '스토어 매출 비중' : '해당 결제 비중') : '배달 매출 비중'} (%)</label>
             <input className="text-input" inputMode="numeric" value={share}
               onChange={(e) => setShare(Math.min(100, Number(e.target.value.replace(/[^0-9]/g, '')) || 0))} />
           </div>
@@ -123,6 +155,28 @@ export function LandingPage({ config }: Props) {
             <select value={cardTier} onChange={(e) => setCardTier(e.target.value)}>
               {CARD_TIER_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
+          </div>
+        )}
+
+        {isPayLike && (
+          <div className="field">
+            <label>연매출 등급</label>
+            <select value={payTier} onChange={(e) => setPayTier(e.target.value)}>
+              {(isNaverpay ? NAVERPAY_TIER_OPTIONS : isKakaopay ? KAKAOPAY_TIER_OPTIONS : SMARTSTORE_TIER_OPTIONS)
+                .map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+        )}
+
+        {isSmartstore && (
+          <div className="field">
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input type="checkbox" checked={shoppingInflow}
+                onChange={(e) => setShoppingInflow(e.target.checked)}
+                style={{ width: 'auto', margin: 0 }} />
+              네이버쇼핑 검색으로 유입 (연동 수수료 2% 추가)
+            </label>
+            <div className="hint">블로그·SNS 등 직접 링크 유입이면 체크 해제</div>
           </div>
         )}
 

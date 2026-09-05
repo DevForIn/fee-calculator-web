@@ -12,6 +12,9 @@ const slugs = [
   'coupang-eats-fee-calculator',
   'yogiyo-fee-calculator',
   'self-employed-fee-calculator',
+  'naver-pay-fee-calculator',
+  'kakao-pay-fee-calculator',
+  'smartstore-fee-calculator',
 ];
 const urls = ['/', ...slugs.map((s) => `/${s}`)];
 
