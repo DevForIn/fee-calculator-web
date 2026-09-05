@@ -1,4 +1,5 @@
 // 순수 SVG 도넛 차트 — 라이브러리 의존 없음, SSG 안전
+// path arc 방식: 각 조각을 정확한 시작/끝 각도로 그려 겹침·범람 없음
 import { won } from '../utils';
 
 export interface DonutSlice {
@@ -21,55 +22,68 @@ export const CHANNEL_COLORS: Record<string, string> = {
   pay: '#a855f7',     // 보라
 };
 
+// 극좌표 → 직교좌표 (12시 방향 0도 기준, 시계방향)
+function polar(cx: number, cy: number, r: number, angleDeg: number) {
+  const a = ((angleDeg - 90) * Math.PI) / 180;
+  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+}
+
+// 도넛 조각(ring segment) path 생성
+function ringSegment(cx: number, cy: number, rOuter: number, rInner: number, startDeg: number, endDeg: number) {
+  // 360도(단일 조각)면 원 두 개로 그림 (path arc는 360도 못 그림)
+  const largeArc = endDeg - startDeg > 180 ? 1 : 0;
+  const oStart = polar(cx, cy, rOuter, startDeg);
+  const oEnd = polar(cx, cy, rOuter, endDeg);
+  const iEnd = polar(cx, cy, rInner, endDeg);
+  const iStart = polar(cx, cy, rInner, startDeg);
+  return [
+    `M ${oStart.x} ${oStart.y}`,
+    `A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${oEnd.x} ${oEnd.y}`,
+    `L ${iEnd.x} ${iEnd.y}`,
+    `A ${rInner} ${rInner} 0 ${largeArc} 0 ${iStart.x} ${iStart.y}`,
+    'Z',
+  ].join(' ');
+}
+
 export function DonutChart({ slices, size = 180 }: Props) {
   const total = slices.reduce((a, b) => a + b.value, 0);
   const positive = slices.filter((s) => s.value > 0);
   if (total <= 0 || positive.length === 0) return null;
 
-  const stroke = size * 0.18;
-  const radius = (size - stroke) / 2;
   const cx = size / 2;
   const cy = size / 2;
-  const circumference = 2 * Math.PI * radius;
+  const rOuter = size / 2;
+  const rInner = size / 2 - size * 0.18;
+  const gap = positive.length > 1 ? 2 : 0; // 조각 사이 각도 간격(도)
 
-  // 각 조각의 시작 오프셋(%)과 길이(%) — 부동소수점 이음새 방지를 위해 누적 비율로 계산
-  let acc = 0;
-  const arcs = positive.map((s) => {
-    const frac = s.value / total;
-    const dash = frac * circumference;
-    const arc = {
-      color: s.color,
-      dash,
-      offset: -acc * circumference,
-    };
-    acc += frac;
-    return arc;
+  // 시작 각도를 누적하며 각 조각의 정확한 start/end 계산
+  let angle = 0;
+  const segments = positive.map((s) => {
+    const sweep = (s.value / total) * 360;
+    const start = angle + gap / 2;
+    const end = angle + sweep - gap / 2;
+    angle += sweep;
+    return { color: s.color, start: Math.min(start, end), end: Math.max(start, end) };
   });
+
+  // 단일 조각(100%)은 도넛 링 자체로 표현
+  const single = positive.length === 1;
 
   return (
     <div className="donut-wrap">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img"
            aria-label="채널별 수수료 비중 도넛 차트">
-        {/* 배경 트랙 (틈이 보여도 자연스럽게) */}
-        <circle cx={cx} cy={cy} r={radius} fill="none"
-          stroke="var(--border, #eee)" strokeWidth={stroke} />
-        <g transform={`rotate(-90 ${cx} ${cy})`}>
-          {arcs.map((a, i) => (
-            <circle key={i} cx={cx} cy={cy} r={radius}
-              fill="none" stroke={a.color} strokeWidth={stroke}
-              strokeLinecap="butt"
-              strokeDasharray={`${a.dash} ${circumference - a.dash}`}
-              strokeDashoffset={a.offset} />
-          ))}
-          {/* 조각 경계 흰 구분선 (2개 이상일 때만) — 각 조각을 또렷하게 분리 */}
-          {arcs.length > 1 && arcs.map((a, i) => (
-            <circle key={`sep-${i}`} cx={cx} cy={cy} r={radius}
-              fill="none" stroke="var(--card-bg, #fff)" strokeWidth={stroke}
-              strokeLinecap="butt"
-              strokeDasharray={`2.5 ${circumference - 2.5}`}
-              strokeDashoffset={a.offset} />
-          ))}
-        </g>
+        {single ? (
+          <>
+            <circle cx={cx} cy={cy} r={(rOuter + rInner) / 2} fill="none"
+              stroke={positive[0].color} strokeWidth={rOuter - rInner} />
+          </>
+        ) : (
+          segments.map((seg, i) => (
+            <path key={i} d={ringSegment(cx, cy, rOuter, rInner, seg.start, seg.end)}
+              fill={seg.color} />
+          ))
+        )}
         <text x={cx} y={cy - 6} textAnchor="middle" className="donut-center-label">월 수수료</text>
         <text x={cx} y={cy + 14} textAnchor="middle" className="donut-center-value">{won(total)}</text>
       </svg>
