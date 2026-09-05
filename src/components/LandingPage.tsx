@@ -120,6 +120,29 @@ export function LandingPage({ config }: Props) {
         <meta property="og:title" content={config.metaTitle} />
         <meta property="og:description" content={config.metaDescription} />
         <meta property="og:url" content={`https://showmefee.com/${config.slug}`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: config.faqs.map((f) => ({
+              '@type': 'Question',
+              name: f.q,
+              acceptedAnswer: { '@type': 'Answer', text: f.a },
+            })),
+          })}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebApplication',
+            name: config.metaTitle,
+            url: `https://showmefee.com/${config.slug}`,
+            applicationCategory: 'FinanceApplication',
+            operatingSystem: 'Web',
+            offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
+            inLanguage: 'ko-KR',
+          })}
+        </script>
       </Head>
       <div className="wrap">
       <div className="topbar">
