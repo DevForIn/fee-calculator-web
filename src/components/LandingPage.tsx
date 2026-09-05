@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Head } from 'vite-react-ssg';
 import type { LandingConfig } from '../landings';
 import { LANDINGS } from '../landings';
-import { RATES, CARD_TIER_OPTIONS, DELIVERY_TIER_OPTIONS } from '../landingRates';
+import { RATES, CARD_TIER_OPTIONS, DELIVERY_TIER_OPTIONS, getDeliveryRate } from '../landingRates';
 import { won, toKorean } from '../utils';
 import { FeedbackBar } from './FeedbackBar';
 
@@ -42,7 +42,7 @@ export function LandingPage({ config }: Props) {
       lines.push({ label: `카드 수수료 (${(rate * 100).toFixed(2)}%)`, amount: fee });
       monthly = fee;
     } else if (isDelivery) {
-      const rate = RATES.delivery[deliveryTier];
+      const rate = getDeliveryRate(config.platform, deliveryTier);
       const mediation = Math.round(channelRevenue * rate);
       const payment = Math.round(channelRevenue * RATES.deliveryPaymentRate);
       const delivery = Math.max(0, orderCount) * RATES.deliveryFeePerOrder[deliveryTier];

@@ -20,7 +20,7 @@ const FALLBACK_RATES: RatesResponse = {
   delivery: {
     baemin: { top: 0.078, mid: 0.068, bottom: 0.02 },
     coupang: { top: 0.078, mid: 0.068, bottom: 0.02 },
-    yogiyo: { top: 0.078, mid: 0.068, bottom: 0.02 },
+    yogiyo: { top: 0.097, mid: 0.097, bottom: 0.097 },
   },
   payRate: 0.02,
   deliveryPaymentRate: 0.03,
