@@ -5,6 +5,7 @@ import type { LandingConfig } from '../landings';
 import { LANDINGS } from '../landings';
 import { RATES, CARD_TIER_OPTIONS, DELIVERY_TIER_OPTIONS } from '../landingRates';
 import { won, toKorean } from '../utils';
+import { FeedbackBar } from './FeedbackBar';
 
 interface Props {
   config: LandingConfig;
@@ -194,6 +195,7 @@ export function LandingPage({ config }: Props) {
         </div>
       </div>
 
+      <FeedbackBar />
       <footer>© showmefee · 참고용 추정치</footer>
     </div>
     </>

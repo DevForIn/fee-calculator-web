@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toPng } from 'html-to-image';
 import { buildSavingReport } from './savingReport';
+import { FeedbackBar } from './components/FeedbackBar';
 import type {
   CardTier, DeliveryTier, Industry, FeeResponse, FeeLine, RatesResponse,
 } from './types';
@@ -400,6 +401,7 @@ export default function App() {
         </p>
       </section>
 
+      <FeedbackBar />
       <footer>© 결제 수수료 계산기 · 참고용 추정치</footer>
     </div>
   );

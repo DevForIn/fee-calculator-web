@@ -138,6 +138,12 @@ button.calc:disabled { opacity: .5; cursor: not-allowed; }
 
 footer { text-align: center; color: var(--gray); font-size: 12px; margin-top: 30px; }
 
+/* 피드백 바 */
+.feedback-bar { margin-top: 26px; padding: 18px; border-radius: 14px; background: var(--card-bg); border: 1px dashed var(--line); text-align: center; }
+.feedback-bar span { display: block; font-size: 13px; color: var(--gray); margin-bottom: 10px; }
+.feedback-btn { display: inline-block; padding: 10px 20px; border-radius: 20px; background: var(--blue); color: #fff; font-size: 14px; font-weight: 700; text-decoration: none; }
+.feedback-btn:active { transform: translateY(1px); }
+
 /* 랜딩 CTA 박스 */
 .cta-box { background: var(--blue-light); border-radius: 16px; padding: 20px; margin-bottom: 18px; text-align: center; }
 .cta-box p { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 14px; font-weight: 600; }
