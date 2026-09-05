@@ -239,3 +239,26 @@ footer { text-align: center; color: var(--gray); font-size: 12px; margin-top: 30
 }
 /* 가로 스크롤 방지 */
 html, body { overflow-x: hidden; max-width: 100%; }
+
+/* 메인 페이지 계산기 허브 링크 */
+.hub-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.hub-link {
+  display: inline-block;
+  padding: 8px 14px;
+  border: 1px solid var(--border, #d0d0d0);
+  border-radius: 999px;
+  font-size: 14px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--card-bg, #fff);
+  transition: background 0.15s, border-color 0.15s;
+}
+.hub-link:hover {
+  border-color: #4a7cff;
+  background: rgba(74, 124, 255, 0.08);
+}

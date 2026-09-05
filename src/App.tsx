@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { toPng } from 'html-to-image';
 import { buildSavingReport } from './savingReport';
 import { FeedbackBar } from './components/FeedbackBar';
+import { LANDINGS } from './landings';
 import type {
   CardTier, DeliveryTier, Industry, FeeResponse, FeeLine, RatesResponse,
 } from './types';
@@ -396,8 +398,53 @@ export default function App() {
           <li>배달앱 수수료 (배민·쿠팡이츠·요기요, 중개료+결제수수료+배달비 실비용)</li>
           <li>채널별 수수료 비교 — 어디서 가장 많이 나가는지</li>
         </ul>
+      </section>
+
+      {/* 개별 계산기 허브 (내부링크 + 유입) */}
+      <section className="seo-content">
+        <h2>수수료별 계산기 바로가기</h2>
+        <p>특정 결제 수단만 계산하고 싶다면 아래 전용 계산기를 이용하세요. 각 페이지에는 해당 수수료의 상세 설명과 자주 묻는 질문도 정리되어 있습니다.</p>
+        <div className="hub-links">
+          {LANDINGS.map((l) => (
+            <Link key={l.slug} to={`/${l.slug}`} className="hub-link">{l.title}</Link>
+          ))}
+        </div>
+      </section>
+
+      {/* 수수료 종합 가이드 */}
+      <section className="seo-content">
+        <h2>자영업자 결제 수수료, 한눈에 이해하기</h2>
+
+        <h3>1. 카드 수수료 (0.5~2.0%)</h3>
+        <p>
+          카드 결제 수수료는 금융위원회가 정하는 우대수수료율을 따릅니다. 연매출이 적을수록 낮은 요율이 적용되어,
+          영세 가맹점(연 3억 이하)은 0.5%, 일반 가맹점(30억 초과)은 약 2.0%입니다. 즉 매출이 적을수록 유리한 구조입니다.
+        </p>
+
+        <h3>2. 배달앱 수수료 (실비용은 매출의 15~25%)</h3>
+        <p>
+          배달앱은 중개이용료만 보면 부담이 작아 보이지만, 실제로는 <b>중개료 + 결제수수료(약 3%) + 건당 배달비</b>가
+          모두 더해집니다. 2026년 기준 배민·쿠팡이츠는 매출 구간별 2.0~7.8%, 요기요는 주문 규모에 따라 4.7~9.7%가 적용됩니다.
+          여기에 배달비(건당 약 1,900~3,400원)까지 더하면 실부담은 매출의 15~25%에 이르기도 합니다.
+        </p>
+
+        <h3>3. 간편결제 수수료 (매출등급별)</h3>
+        <p>
+          네이버페이·카카오페이 등 간편결제도 국세청 연매출 등급에 따라 우대수수료가 적용됩니다.
+          네이버페이 결제형은 약 0.9~2.3%, 카카오페이(신용카드)는 약 0.2~2.0% 수준입니다.
+          온라인 판매라면 스마트스토어처럼 주문관리 수수료가 통합된 별도 체계(약 1.8~3.6%)도 확인해야 합니다.
+        </p>
+
+        <h3>수수료를 줄이는 방법</h3>
+        <ul>
+          <li>배달 비중이 높다면 포장·픽업을 유도해 배달비·중개료 부담을 낮추기</li>
+          <li>체크카드·간편결제 등 상대적으로 낮은 수단 활용</li>
+          <li>온라인 판매는 자체 채널(블로그·SNS) 유입으로 쇼핑연동 수수료 절감</li>
+          <li>우대수수료 구간 자격 확인 — 자격이 되는데 일반 요율을 내고 있진 않은지 점검</li>
+        </ul>
+
         <p className="seo-note">
-          ※ 수수료율은 공개 자료 기반 추정치이며, 실제 요율은 계약·가맹점 등급에 따라 달라질 수 있습니다.
+          ※ 수수료율은 공개 자료 기반 2026년 추정치이며, 실제 요율은 계약·가맹점 등급·결제수단에 따라 달라질 수 있습니다. 참고용으로 활용하세요.
         </p>
       </section>
 
