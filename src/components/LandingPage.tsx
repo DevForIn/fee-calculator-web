@@ -172,6 +172,17 @@ export function LandingPage({ config }: Props) {
         </>
       )}
 
+      {/* 본문 콘텐츠 (SEO + 애드센스) */}
+      {config.sections.map((sec, i) => (
+        <section key={i} className="seo-content">
+          <h2>{sec.heading}</h2>
+          {sec.paragraphs.map((p, j) => <p key={j}>{p}</p>)}
+          {sec.bullets && (
+            <ul>{sec.bullets.map((b, k) => <li key={k}>{b}</li>)}</ul>
+          )}
+        </section>
+      ))}
+
       {/* FAQ */}
       <section className="seo-content">
         <h2>{config.title} 자주 묻는 질문</h2>
