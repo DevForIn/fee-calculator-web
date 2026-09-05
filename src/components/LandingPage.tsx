@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Head } from 'vite-react-ssg';
 import type { LandingConfig } from '../landings';
 import { LANDINGS } from '../landings';
-import { RATES, CARD_TIER_OPTIONS, DELIVERY_TIER_OPTIONS, getDeliveryRate } from '../landingRates';
+import { RATES, CARD_TIER_OPTIONS, DELIVERY_TIER_OPTIONS, YOGIYO_TIER_OPTIONS, getDeliveryRate } from '../landingRates';
 import { won, toKorean } from '../utils';
 import { FeedbackBar } from './FeedbackBar';
 
@@ -29,6 +29,13 @@ export function LandingPage({ config }: Props) {
   const isCard = config.type === 'card';
   const isDelivery = config.type === 'delivery';
   const isSelf = config.type === 'self-employed';
+  const isYogiyo = config.platform === 'yogiyo';
+
+  // 요기요는 주문건수 구간(y1~y4), 그 외 배달앱은 매출 구간(top/mid/bottom)
+  const [deliveryTier2, setDeliveryTier2] = useState(isYogiyo ? 'y1' : 'top');
+  const dTier = isYogiyo ? deliveryTier2 : deliveryTier;
+  // 배달비 구간 키: 요기요 tier(y*)는 배달비 표에 없으므로 대표값(top) 사용
+  const feeKey = isYogiyo ? 'top' : deliveryTier;
 
   function calculate() {
     if (revenue <= 0) return;
@@ -42,10 +49,10 @@ export function LandingPage({ config }: Props) {
       lines.push({ label: `카드 수수료 (${(rate * 100).toFixed(2)}%)`, amount: fee });
       monthly = fee;
     } else if (isDelivery) {
-      const rate = getDeliveryRate(config.platform, deliveryTier);
+      const rate = getDeliveryRate(config.platform, dTier);
       const mediation = Math.round(channelRevenue * rate);
       const payment = Math.round(channelRevenue * RATES.deliveryPaymentRate);
-      const delivery = Math.max(0, orderCount) * RATES.deliveryFeePerOrder[deliveryTier];
+      const delivery = Math.max(0, orderCount) * RATES.deliveryFeePerOrder[feeKey];
       lines.push({ label: `중개이용료 (${(rate * 100).toFixed(1)}%)`, amount: mediation });
       lines.push({ label: '결제수수료 (약 3%)', amount: payment });
       lines.push({ label: `배달비 (${orderCount.toLocaleString('ko-KR')}건)`, amount: delivery });
@@ -122,17 +129,23 @@ export function LandingPage({ config }: Props) {
         {isDelivery && (
           <>
             <div className="field">
-              <label>배달 매출 구간</label>
-              <select value={deliveryTier} onChange={(e) => setDeliveryTier(e.target.value)}>
-                {DELIVERY_TIER_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
+              <label>{isYogiyo ? '요기요 주문 구간' : '배달 매출 구간'}</label>
+              {isYogiyo ? (
+                <select value={deliveryTier2} onChange={(e) => setDeliveryTier2(e.target.value)}>
+                  {YOGIYO_TIER_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              ) : (
+                <select value={deliveryTier} onChange={(e) => setDeliveryTier(e.target.value)}>
+                  {DELIVERY_TIER_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              )}
             </div>
             <div className="field">
               <label>한 달 배달 주문 건수</label>
               <input className="text-input" inputMode="numeric"
                 value={orderCount ? orderCount.toLocaleString('ko-KR') : ''}
                 onChange={(e) => setOrderCount(Number(e.target.value.replace(/[^0-9]/g, '')) || 0)} />
-              <div className="hint">1건당 약 {won(RATES.deliveryFeePerOrder[deliveryTier])} 배달비</div>
+              <div className="hint">1건당 약 {won(RATES.deliveryFeePerOrder[feeKey])} 배달비</div>
             </div>
           </>
         )}
