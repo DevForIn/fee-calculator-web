@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { toPng } from 'html-to-image';
 import { buildSavingReport } from './savingReport';
 import { FeedbackBar } from './components/FeedbackBar';
+import { DonutChart, CHANNEL_COLORS } from './components/DonutChart';
 import { LANDINGS } from './landings';
 import type {
   CardTier, DeliveryTier, Industry, FeeResponse, FeeLine, RatesResponse,
@@ -315,6 +316,9 @@ export default function App() {
           </div>
 
           <div className="card">
+            <DonutChart slices={result.lines
+              .filter((r) => r.fee > 0)
+              .map((r) => ({ label: r.label, value: r.fee, color: CHANNEL_COLORS[r.channel] || '#888' }))} />
             <ul className="breakdown">
               {result.lines.map((r, i) => {
                 const isDelivery = DELIVERY_CHANNELS.includes(r.channel);

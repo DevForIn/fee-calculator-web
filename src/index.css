@@ -262,3 +262,45 @@ html, body { overflow-x: hidden; max-width: 100%; }
   border-color: #4a7cff;
   background: rgba(74, 124, 255, 0.08);
 }
+
+/* 결과 도넛 차트 */
+.donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 8px 0 18px;
+  border-bottom: 1px solid var(--border, #eee);
+  margin-bottom: 14px;
+}
+.donut-center-label {
+  font-size: 11px;
+  fill: var(--muted, #888);
+}
+.donut-center-value {
+  font-size: 15px;
+  font-weight: 700;
+  fill: var(--text, #222);
+}
+.donut-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 140px;
+}
+.donut-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 14px;
+}
+.donut-legend .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.donut-legend .lg-name { flex: 1; }
+.donut-legend .lg-pct { font-weight: 600; color: var(--muted, #666); }
