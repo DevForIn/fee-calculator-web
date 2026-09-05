@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
 import { toPng } from 'html-to-image';
 import { buildSavingReport } from './savingReport';
 import { FeedbackBar } from './components/FeedbackBar';
@@ -191,6 +192,10 @@ export default function App() {
 
   return (
     <div className="wrap">
+      <Head>
+        <title>결제 수수료 계산기 | 우리 가게 수수료 한눈에</title>
+        <meta name="description" content="카드·배달앱·간편결제 등 모든 결제 채널의 수수료를 한 번에. 업종과 월매출만 넣으면 우리 가게가 내는 결제 수수료를 계산해드립니다." />
+      </Head>
       <div className="topbar">
         <button className="icon-btn round" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
           {theme === 'dark' ? '☀️' : '🌙'}
