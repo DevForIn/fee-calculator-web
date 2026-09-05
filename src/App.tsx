@@ -402,7 +402,7 @@ export default function App() {
       </section>
 
       <FeedbackBar />
-      <footer>© 결제 수수료 계산기 · 참고용 추정치</footer>
+      <footer>© 2026 showmefee · 결제 수수료 계산기 · by DevForIn</footer>
     </div>
   );
 }

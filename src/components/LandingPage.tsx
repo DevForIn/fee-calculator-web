@@ -196,7 +196,7 @@ export function LandingPage({ config }: Props) {
       </div>
 
       <FeedbackBar />
-      <footer>© showmefee · 참고용 추정치</footer>
+      <footer>© 2026 showmefee · 결제 수수료 계산기 · by DevForIn</footer>
     </div>
     </>
   );
