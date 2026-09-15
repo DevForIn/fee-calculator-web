@@ -297,7 +297,14 @@ export function LandingPage({ config }: Props) {
       </div>
 
       <FeedbackBar />
-      <footer>© 2026 showmefee · 결제 수수료 계산기 · by DevForIn</footer>
+      <footer style={{ textAlign: 'center', color: 'var(--gray)', fontSize: 12, marginTop: 30 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 8, flexWrap: 'wrap' }}>
+          <Link to="/about" style={{ color: 'var(--gray)', textDecoration: 'none' }}>서비스 소개</Link>
+          <Link to="/privacy" style={{ color: 'var(--gray)', textDecoration: 'none' }}>개인정보처리방침</Link>
+          <Link to="/disclaimer" style={{ color: 'var(--gray)', textDecoration: 'none' }}>면책고지</Link>
+        </div>
+        © 2026 showmefee · 결제 수수료 계산기 · by DevForIn
+      </footer>
     </div>
     </>
   );
